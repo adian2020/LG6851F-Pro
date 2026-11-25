@@ -8,7 +8,7 @@ st=next(ow.glob('staging_dir/target-aarch64_cortex-a55*'))
 tc=next(ow.glob('staging_dir/toolchain-aarch64_cortex-a55*/bin/aarch64-openwrt-linux-musl-gcc'));tc=str(tc)[:-3]
 part=sys.argv[1]
 paths={'cmn':base/'vendor-source/mt_wifi_cmn','wifi':base/'vendor-source/wifi/mt_wifi_ap','hwifi':base/'vendor-source/wifi/wlan_hwifi','warp':base/'vendor-source/wifi/warp_driver/warp','coex':base/'vendor-source/wifi_md_coex'}
-args=['make','-C',str(k),'-j8','ARCH=arm64','CROSS_COMPILE='+str(tc),'M='+str(paths[part]),'V=0','CONFIG_WERROR=n']
+args=['make','-C',str(k),'-j'+os.environ.get('JOBS','4'),'ARCH=arm64','CROSS_COMPILE='+str(tc),'M='+str(paths[part]),'V=0','CONFIG_WERROR=n']
 flags=['-I'+str(st/'usr/include/mac80211-backport'),'-I'+str(st/'usr/include/mac80211-backport/uapi'),'-I'+str(st/'usr/include/mac80211'),'-I'+str(st/'usr/include/mac80211/uapi'),'-DBACKPORT_NOSTDINC','-include','backport/backport.h']
 extra=[str(k.parent/'symvers/mac80211.symvers')]
 if part in ('cmn','wifi'):

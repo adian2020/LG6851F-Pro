@@ -7,7 +7,9 @@ k=next(r.glob('build_dir/target-*/linux-mediatek_mt6990/linux-6.18.44'))
 tool=next(r.glob('staging_dir/toolchain-aarch64_cortex-a55*/bin/aarch64-openwrt-linux-musl-gcc'))
 prefix=str(tool)[:-3];strip=prefix+'strip'
 for part in ['coex','cmn','warp','wifi','hwifi']:
- subprocess.run(['python3',str(r/'scripts/vendor-build-part.py'),part],check=True)
+ subprocess.run(['python3',str(r/'scripts/vendor-build-part.py'),part],env={**os.environ,'JOBS':a.jobs},check=True)
+ if part=='wifi':
+  subprocess.run(['python3',str(r/'scripts/cloud/vendor_repair.py'),str(r/'vendor-source/wifi/mt_wifi_ap/mt_wifi.ko'),str(r/'build-logs/cloud-driver-repair.json')],check=True)
 dest=r/'files/usr/lib/lg6851f-vendor618/modules';dest.mkdir(parents=True,exist_ok=True)
 for rel in ['mt_wifi_cmn','wifi/mt_wifi_ap','wifi/wlan_hwifi','wifi/warp_driver/warp','wifi_md_coex']:
  for ko in (r/'vendor-source'/rel).glob('*.ko'):

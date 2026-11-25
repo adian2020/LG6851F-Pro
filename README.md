@@ -1,5 +1,13 @@
 # 烽火 Pro LG6851F：短信解锁、原厂 SSH 固化与 OpenWrt
 
+## 此分支：独立源码云编译
+
+原作者 `DnnDaa/LG6851F-Pro` 的 Release 下载地址目前不可用，fork 不会复制 Release 附件。下面的历史下载链接保留作版本记录，不能视为本分支已恢复下载。
+
+本分支为 `adian2020/LG6851F-Pro:cloud-build-lg6851f-pro`，使用仓库保存的源码、固定 feeds、公开测试签名材料和槽位差异尝试完整重编。构建入口为 `.github/workflows/lg6851f-pro-source-build.yml`；首次及源码修改推送至此分支会触发，成品与诊断在 [Actions](https://github.com/adian2020/LG6851F-Pro/actions) 获取。
+
+这是独立实验构建，不是原作者 V2.10 二进制的精确复现，也没有继承原版实机验证结果。不会复用旧模块去填补重编失败，详见 [独立源码云编译说明](docs/独立源码云编译.md)。原仓库和 main 不受此分支影响。
+
 面向 **LG6851F Pro / MediaTek T830（MT6990）/ eMMC / 2.4G + 5G**。这里整理了从原厂系统短信注入获取 SSH，到备份、原厂 SSH 固化、安装 OpenWrt 和日常升级的流程，以及本次适配使用的完整工程源码。
 
 **本仓库的解锁路线只有短信注入。** 不收录其他解锁方式。非烽火Pro2024、NAND/UBI 设备不能使用本项目分区镜像。

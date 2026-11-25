@@ -22,3 +22,6 @@ private-device-work/
 /vendor-source/**/modules.order
 
 /release-runtime/
+/build-cloud/
+/cloud-dist/
+/.cloud-venv/
