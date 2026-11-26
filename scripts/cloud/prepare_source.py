@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,19 +13,29 @@ WORK=ROOT/'build-cloud'
 REPAIRS=ROOT/'development-history/systemfix-source/systemfix-20261021-30/driver-build/repair-source'
 
 
+def missing_vendor_payloads():
+    # Check literal install inputs kept in the package tree. Generated files
+    # and make-variable references are checked by the normal package build.
+    install_input = re.compile(
+        r'^\t\$\((?:CP|INSTALL_(?:DATA|BIN|CONF|SUID))\)\s+\./(files/[^\s$;|]+)',
+        re.MULTILINE,
+    )
+    missing = []
+    for recipe in sorted((ROOT / 'package/vendor').glob('*/Makefile')):
+        for source in install_input.findall(recipe.read_text()):
+            if not any(path.exists() for path in recipe.parent.glob(source)):
+                missing.append(f'{recipe.parent.relative_to(ROOT)}/{source}')
+    return missing
+
+
 def check():
     required=['.config','scripts/build-vendor-public.py','scripts/vendor-build-part.py',
               'scripts/lg6851f_sign_export_boot_rootfs.sh','lg6851f_sign_tool/reference/boot_b-reference.img',
               'development-history/V2.10/hostapd-native/hostapd/.config',
               'files-slots/a/lib/upgrade/platform.sh','files-slots/b/lib/upgrade/platform.sh']
     required += [str((REPAIRS/name).relative_to(ROOT)) for name in ['parser-repair.c','action-repair.c','pmksa-repair.c']]
-    adb_files = Path('package/vendor/mt6990-adb-usb/files')
-    required += [str(adb_files / name) for name in (
-        'etc/init.d/mt6990-adb-usb', 'usr/sbin/mt6990-adb-usb',
-        'usr/libexec/mt6990-adb/adbd_usb', 'usr/libexec/mt6990-adb/libubox.so.20210516',
-        'usr/libexec/mt6990-adb/libuci.so',
-    )]
     missing=[name for name in required if not (ROOT/name).is_file()]
+    missing.extend(missing_vendor_payloads())
     if missing:raise RuntimeError('Missing source inputs: '+', '.join(missing))
     image=ROOT/'target/linux/mediatek/mt6990/base-files/usr/lib/firmware/lg6851f/connsys_gnss_b.img'
     if hashlib.sha256(image.read_bytes()).hexdigest()!='633a1e2a19593d9cf12db4e140d893da9d1817c721381848831d90afc0b02463':

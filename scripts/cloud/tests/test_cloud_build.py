@@ -22,6 +22,25 @@ class CloudBuildTest(unittest.TestCase):
         self.assertIn('experimental',info['build_mode'])
         self.assertFalse(info['original_release_links_recovered'])
 
+    def test_vendor_preflight_finds_missing_literal_and_copy_inputs(self):
+        with tempfile.TemporaryDirectory() as name, patch.object(prepare_source, 'ROOT', Path(name)):
+            package = Path(name) / 'package/vendor/dashboard'
+            payload = package / 'files'
+            payload.mkdir(parents=True)
+            (package / 'Makefile').write_text(
+                '\t$(INSTALL_DATA) ./files/menu.json $(1)/menu.json\n'
+                '\t$(CP) ./files/assets/* $(1)/\n'
+                '\t$(INSTALL_BIN) $(PKG_BUILD_DIR)/generated $(1)/bin/\n'
+            )
+            self.assertEqual(prepare_source.missing_vendor_payloads(), [
+                'package/vendor/dashboard/files/menu.json',
+                'package/vendor/dashboard/files/assets/*',
+            ])
+            (payload / 'menu.json').touch()
+            (payload / 'assets').mkdir()
+            (payload / 'assets/home.js').touch()
+            self.assertEqual(prepare_source.missing_vendor_payloads(), [])
+
     def test_elf_reader_rejects_wrong_architecture(self):
         with tempfile.TemporaryDirectory() as name:
             path=Path(name)/'elf'

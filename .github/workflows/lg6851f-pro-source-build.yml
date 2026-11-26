@@ -48,18 +48,20 @@ jobs:
           python3 -m venv .cloud-venv
           .cloud-venv/bin/pip install pycryptodome pyasn1 cryptography
           echo "$GITHUB_WORKSPACE/.cloud-venv/bin" >> "$GITHUB_PATH"
-      - name: 缓存校验过的上游下载
-        uses: actions/cache@v4
+      - name: 恢复上游源码下载缓存
+        id: restore-downloads
+        uses: actions/cache/restore@v4
         with:
           path: dl
-          key: lg6851f-pro-dl-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}
-          restore-keys: lg6851f-pro-dl-${{ runner.os }}-
+          key: lg6851f-pro-dl-v2-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: lg6851f-pro-dl-v2-${{ runner.os }}-${{ hashFiles('feeds.conf.default') }}-
       - name: 检查源码材料和移植工具
         run: |
           python3 scripts/cloud/prepare_source.py --check
           python3 -m unittest discover -s scripts/cloud/tests -p 'test_*.py'
           bash -n scripts/cloud/build.sh
       - name: 编译内核及厂商源码并分别构建两槽固件
+        id: compile
         env:
           JOBS: '4'
         run: |
@@ -92,6 +94,12 @@ jobs:
             .config
           include-hidden-files: true
           retention-days: 14
+      - name: 保存本次上游源码下载
+        if: ${{ !cancelled() && (steps.compile.outcome == 'success' || steps.compile.outcome == 'failure') }}
+        uses: actions/cache/save@v4
+        with:
+          path: dl
+          key: ${{ steps.restore-downloads.outputs.cache-primary-key }}
 
   publish-apk:
     needs: build

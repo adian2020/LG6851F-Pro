@@ -1,0 +1,11 @@
+{
+	"luci-app-fiberhome": {
+		"description": "Grant access to the LG6851F status dashboard (read-only)",
+		"read": {
+			"ubus": {
+				"fiberhomedash": [ "status", "signal", "sysinfo" ]
+			},
+			"uci": [ "luci", "fiberhomedash" ]
+		}
+	}
+}
