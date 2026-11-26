@@ -73,6 +73,8 @@ need_file "$CERT1"
 need_file "$SIGN_TOOL_DIR/sign_flow.py"
 need_file "${ROOT_KEY}_prvk.pem"
 need_file "${IMAGE_KEY}_prvk.pem"
+PYTHON_BIN="$(command -v python3.10)" || die "CPython 3.10 is required for the MTK signing modules"
+(cd "$SIGN_TOOL_DIR" && "$PYTHON_BIN" -B -c 'import sign_flow') || die "MTK signing modules failed to load"
 
 mkdir -p "$FINAL_A_DIR" "$FINAL_DIR" "$WORK/in" "$WORK/in-a" "$WORK/log"
 
@@ -251,8 +253,6 @@ if [ "$DECISION" = "SIGN" ]; then
 	cp -f "$UNSIGNED_BOOT" "$WORK/in/boot.img"
 	cp -f "$UNSIGNED_BOOT" "$WORK/in/boot.orig.img"
 
-	PYTHON_BIN="$(command -v python3.10 || command -v python3 || true)"
-	[ -n "$PYTHON_BIN" ] || die "python3.10 or python3 is required"
 	mkdir -p "$WORK/python-wrap"
 	ln -sf "$PYTHON_BIN" "$WORK/python-wrap/python3"
 	export PATH="$WORK/python-wrap:$PATH"
