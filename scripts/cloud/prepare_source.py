@@ -14,17 +14,19 @@ REPAIRS=ROOT/'development-history/systemfix-source/systemfix-20261021-30/driver-
 
 
 def missing_vendor_payloads():
-    # Check literal install inputs kept in the package tree. Generated files
-    # and make-variable references are checked by the normal package build.
+    # Check literal inputs from the source tree. Generated files are checked
+    # by the normal package build.
     install_input = re.compile(
-        r'^\t\$\((?:CP|INSTALL_(?:DATA|BIN|CONF|SUID))\)\s+\./(files/[^\s$;|]+)',
+        r'^\t\$\((?:CP|INSTALL_(?:DATA|BIN|CONF|SUID))\)[ \t]+'
+        r'(\.|\$\(CURDIR\)|\$\(TOPDIR\))/([^\s$;|]+)(?=\s)',
         re.MULTILINE,
     )
     missing = []
     for recipe in sorted((ROOT / 'package/vendor').glob('*/Makefile')):
-        for source in install_input.findall(recipe.read_text()):
-            if not any(path.exists() for path in recipe.parent.glob(source)):
-                missing.append(f'{recipe.parent.relative_to(ROOT)}/{source}')
+        for prefix, source in install_input.findall(recipe.read_text()):
+            source_dir = ROOT if prefix == '$(TOPDIR)' else recipe.parent
+            if not any(path.exists() for path in source_dir.glob(source)):
+                missing.append(str((source_dir / source).relative_to(ROOT)))
     return missing
 
 

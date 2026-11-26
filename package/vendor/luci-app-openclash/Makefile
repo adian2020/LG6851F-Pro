@@ -5,6 +5,7 @@ PKG_VERSION:=0.47.156
 PKG_MAINTAINER:=vernesong <https://github.com/vernesong/OpenClash>
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+PKG_FILE_DEPENDS:=$(TOPDIR)/files/etc/init.d/openclash
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -54,9 +55,10 @@ endef
 define Build/Prepare
 	$(CP) $(CURDIR)/root $(PKG_BUILD_DIR)
 	$(CP) $(CURDIR)/luasrc $(PKG_BUILD_DIR)
+	$(INSTALL_DIR) $(PKG_BUILD_DIR)/root/etc/init.d
+	$(INSTALL_BIN) $(TOPDIR)/files/etc/init.d/openclash $(PKG_BUILD_DIR)/root/etc/init.d/openclash
 	$(foreach po,$(wildcard ${CURDIR}/po/zh-cn/*.po), \
 		po2lmo $(po) $(PKG_BUILD_DIR)/$(patsubst %.po,%.lmo,$(notdir $(po)));)
-	chmod 0755 $(PKG_BUILD_DIR)/root/etc/init.d/openclash
 	chmod -R 0755 $(PKG_BUILD_DIR)/root/usr/share/openclash/
 	exit 0
 endef

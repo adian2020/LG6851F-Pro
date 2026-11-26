@@ -30,15 +30,23 @@ class CloudBuildTest(unittest.TestCase):
             (package / 'Makefile').write_text(
                 '\t$(INSTALL_DATA) ./files/menu.json $(1)/menu.json\n'
                 '\t$(CP) ./files/assets/* $(1)/\n'
+                '\t$(CP) $(CURDIR)/root $(PKG_BUILD_DIR)\n'
+                '\t$(INSTALL_BIN) $(TOPDIR)/files/etc/init.d/openclash $(1)/etc/init.d/\n'
                 '\t$(INSTALL_BIN) $(PKG_BUILD_DIR)/generated $(1)/bin/\n'
             )
             self.assertEqual(prepare_source.missing_vendor_payloads(), [
                 'package/vendor/dashboard/files/menu.json',
                 'package/vendor/dashboard/files/assets/*',
+                'package/vendor/dashboard/root',
+                'files/etc/init.d/openclash',
             ])
             (payload / 'menu.json').touch()
             (payload / 'assets').mkdir()
             (payload / 'assets/home.js').touch()
+            (package / 'root').mkdir()
+            init = Path(name) / 'files/etc/init.d/openclash'
+            init.parent.mkdir(parents=True)
+            init.touch()
             self.assertEqual(prepare_source.missing_vendor_payloads(), [])
 
     def test_elf_reader_rejects_wrong_architecture(self):
