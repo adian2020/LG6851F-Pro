@@ -18,6 +18,12 @@ def check():
               'development-history/V2.10/hostapd-native/hostapd/.config',
               'files-slots/a/lib/upgrade/platform.sh','files-slots/b/lib/upgrade/platform.sh']
     required += [str((REPAIRS/name).relative_to(ROOT)) for name in ['parser-repair.c','action-repair.c','pmksa-repair.c']]
+    adb_files = Path('package/vendor/mt6990-adb-usb/files')
+    required += [str(adb_files / name) for name in (
+        'etc/init.d/mt6990-adb-usb', 'usr/sbin/mt6990-adb-usb',
+        'usr/libexec/mt6990-adb/adbd_usb', 'usr/libexec/mt6990-adb/libubox.so.20210516',
+        'usr/libexec/mt6990-adb/libuci.so',
+    )]
     missing=[name for name in required if not (ROOT/name).is_file()]
     if missing:raise RuntimeError('Missing source inputs: '+', '.join(missing))
     image=ROOT/'target/linux/mediatek/mt6990/base-files/usr/lib/firmware/lg6851f/connsys_gnss_b.img'
