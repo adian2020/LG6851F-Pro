@@ -37,11 +37,14 @@ def hostapd(jobs):
     compiler=next(ROOT.glob('staging_dir/toolchain-aarch64_cortex-a55*/bin/aarch64-openwrt-linux-musl-gcc'))
     target=next(ROOT.glob('staging_dir/target-aarch64_cortex-a55*'))
     tree=ROOT/'development-history/V2.10/hostapd-native/hostapd'
+    vendor_headers=ROOT/'vendor-include/mtk_nl80211_inc'
+    supplicant_headers=tree.parent/'wpa_supplicant'
     env=dict(os.environ,STAGING_DIR=str(target),PKG_CONFIG_LIBDIR=str(target/'usr/lib/pkgconfig'),PKG_CONFIG_SYSROOT_DIR=str(target),
              LDFLAGS='-L'+str(target/'usr/lib')+' -Wl,-rpath-link,'+str(target/'lib')+' -Wl,-rpath-link,'+str(target/'usr/lib'))
     subprocess.run(['make','-C',str(tree),'-j'+jobs,'CC='+str(compiler),'CONFIG_LIBNL32=y',
+                    'CONFIG_TLS=openssl',
                     'LIBNL_INC='+str(target/'usr/include/libnl3'),
-                    'EXTRA_CFLAGS=-I'+str(target/'usr/include'),
+                    f'EXTRA_CFLAGS=-I{target / "usr/include"} -I{vendor_headers} -I{supplicant_headers}',
                     'hostapd'],env=env,check=True)
     out=ROOT/'files/usr/sbin/lg6851f-hostapd'
     shutil.copyfile(tree/'hostapd',out);out.chmod(0o755)

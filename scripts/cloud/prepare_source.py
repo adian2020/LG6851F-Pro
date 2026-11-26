@@ -34,6 +34,8 @@ def check():
     required=['.config','scripts/build-vendor-public.py','scripts/vendor-build-part.py',
               'scripts/lg6851f_sign_export_boot_rootfs.sh','lg6851f_sign_tool/reference/boot_b-reference.img',
               'development-history/V2.10/hostapd-native/hostapd/.config',
+              'vendor-include/mtk_nl80211_inc/mtk_vendor_nl80211.h',
+              'development-history/V2.10/hostapd-native/wpa_supplicant/wpa_supplicant_i.h',
               'files-slots/a/lib/upgrade/platform.sh','files-slots/b/lib/upgrade/platform.sh']
     required += [str((REPAIRS/name).relative_to(ROOT)) for name in ['parser-repair.c','action-repair.c','pmksa-repair.c']]
     missing=[name for name in required if not (ROOT/name).is_file()]
@@ -81,7 +83,8 @@ def prepare():
     if source.count(old)!=1:raise RuntimeError('Radar source context differs')
     cfg.write_text(source.replace(old,'(sizeof(u32)+sizeof(u32))*6, vendor_event - 1, GFP_KERNEL)'))
     config=ROOT/'.config'
-    with config.open('a') as f:f.write('\nCONFIG_PACKAGE_libnl-core=y\nCONFIG_PACKAGE_libnl-genl=y\n')
+    with config.open('a') as f:
+        f.write('\nCONFIG_PACKAGE_libnl-core=y\nCONFIG_PACKAGE_libnl-genl=y\nCONFIG_PACKAGE_libopenssl=y\n')
     (WORK/'prepared.json').write_text(json.dumps(info,indent=2)+'\n')
 
 

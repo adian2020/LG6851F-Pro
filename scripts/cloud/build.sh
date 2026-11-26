@@ -7,6 +7,12 @@ jobs="${JOBS:-4}"
 mkdir -p build-logs
 python3 scripts/cloud/prepare_source.py
 ./scripts/prepare-public-build.sh
+for package in libnl-core libnl-genl libopenssl; do
+  if ! grep -qx "CONFIG_PACKAGE_${package}=y" .config; then
+    printf '厂商 hostapd 运行库未选入固件：%s\n' "$package" >&2
+    exit 1
+  fi
+done
 make -j"$jobs" V=s tools/install
 make -j"$jobs" V=s toolchain/install
 make -j"$jobs" V=s target/linux/prepare
